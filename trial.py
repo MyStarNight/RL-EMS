@@ -28,7 +28,37 @@ price_dict = {
     21: 12,
     22: 12,
     23: 6,
-    24: 6
+    24: 6,
+    25: 6
+}
+
+
+usage_duration = {
+    1: 2,
+    2: 2,
+    3: 2,
+    4: 2,
+    5: 2,
+    6: 2,
+    7: 2,
+    8: 2,
+    9: 4,
+    10: 5,
+    11: 5,
+    12: 3,
+    13: 5,
+    14: 5,
+    15: 5,
+    16: 5,
+    17: 4,
+    18: 3,
+    19: 3,
+    20: 3,
+    21: 3,
+    22: 3,
+    23: 2,
+    24: 2,
+    25: 2
 }
 
 # 设置当前一天的初始电量为50
@@ -42,6 +72,22 @@ energy_consumed_per_hour = 5
 
 # 设置EMS的三个Actions
 all_possible_actions = ('C', 'D', 'U')
+
+def money_saved_calculaton(actions, price_dict, usage_duration, charge_rate=5):
+    money_without_ess = 0
+    for hour in range(1, 25):
+        money_without_ess += price_dict[hour] * usage_duration[hour]
+
+    money_with_ess = 0
+    for hour in range(1, 25):
+        if actions[hour-1] == "charge":
+            money_with_ess += price_dict[hour] * (usage_duration[hour] + charge_rate)
+        elif actions[hour-1] == "discharge":
+            continue
+        elif actions[hour-1] == "use_grid":
+            money_with_ess += price_dict[hour] * usage_duration[hour]
+
+    return  money_without_ess, money_with_ess, money_without_ess-money_with_ess
 
 def action_choice(energy_storaged, energy_used):
     '''

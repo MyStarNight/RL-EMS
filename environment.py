@@ -2,9 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-import trial
-import pandas
 from tqdm import tqdm
+import function
 
 all_possible_actions = ["charge", "discharge", "use_grid"]
 
@@ -88,7 +87,7 @@ def max_dict(d):
 
   return np.random.choice(max_keys), max_val
 
-def choose_action(energy_state, charge_rate, discharge_rate, capacity:int):
+def choose_action(energy_state, charge_rate, discharge_rate, capacity:int, exploration_rate, q_values, state):
     if energy_state + charge_rate <= capacity and energy_state - discharge_rate >=0:
         # 一切正常
         if np.random.rand() < exploration_rate:
@@ -117,11 +116,12 @@ def choose_action(energy_state, charge_rate, discharge_rate, capacity:int):
 
 if __name__ == '__main__':
     # 获取一天24h的价格
-    grid_price = trial.price_dict
+    grid_price, grid_consumption = function.price_dict, function.consumption_dict
+    grid_price, grid_consumption = function.processing_data(grid_price, grid_consumption)
     price_set = sorted(list(set(grid_price.values())))
 
     # EMS，启动！
-    ems = EMS_MDP(grid_price=grid_price)
+    ems = EMS_MDP(grid_price=grid_price, battery_capacity=60, max_charge_rate=6, max_discharge_rate=3)
 
     # 得到所有状态state
     all_states = []
@@ -140,12 +140,12 @@ if __name__ == '__main__':
 
     # 开始进行q learning的训练
     num_episode = 10000     # 迭代次数
-    exploration_rate = 0.2  # 贪心epsilon
+    exploration_rate = 0.5  # 贪心epsilon
     learning_rate = 0.1     # learning rate
     # for episode in tqdm(range(num_episode)):
     for episode in range(1, num_episode+1):
         # 重置EMS，回到初始状态
-        state = ems.reset(energy_start=2)
+        state = ems.reset(energy_start=np.random.randint(0, 61))
         total_reward = 0
 
         states = [state]
@@ -154,10 +154,11 @@ if __name__ == '__main__':
         while True:
             # 设定当前状态下的充放电功率
             # ems.charge_discharge(charge_rate=ems.max_charge_rate, discharge_rate=np.random.randint(3, ems.max_discharge_rate+1))
-            ems.charge_discharge(charge_rate=ems.max_charge_rate, discharge_rate=trial.usage_duration[ems.time_hour])
+            ems.charge_discharge(charge_rate=ems.max_charge_rate, discharge_rate=grid_consumption[ems.time_hour])
 
             # 选择动作
-            action =choose_action(ems.state[0], ems.charge_rate, ems.discharge_rate, ems.battery_capacity)
+            action =choose_action(ems.state[0], ems.charge_rate, ems.discharge_rate, ems.battery_capacity,
+                                  exploration_rate=exploration_rate, q_values=q_values, state=state)
 
             # 样本计数
             sample_counts[state][action] = sample_counts[state][action] + 1
@@ -180,7 +181,7 @@ if __name__ == '__main__':
             if len(actions)==len(grid_price)-1:
                 break
 
-        if episode % 100 == 0 or episode == num_episode-1:
+        if episode % 1000 == 0 or episode == num_episode-1:
             print(f"Episode {episode}, Total Reward: {total_reward}")
 
     q_values_result = pd.DataFrame(q_values).T
@@ -190,8 +191,8 @@ if __name__ == '__main__':
     for action, state in zip(actions, states[:-1]):
         print(f"this state: {state}, this action: {action}")
 
-    money_without_ess, money_with_ess, money_saved = trial.money_saved_calculaton(actions, trial.price_dict, trial.usage_duration)
-    print(f"\nMoney without Energy Management: {money_without_ess}$")
-    print(f"Money with Energy Management: {money_with_ess}$")
-    print(f"EMS have saved {money_saved}$")
+    money_without_ess, money_with_ess, money_saved = function.money_saved_calculaton(actions, grid_price, grid_consumption, charge_rate=ems.charge_rate)
+    print(f"\nMoney without Energy Management: {money_without_ess}$Eu")
+    print(f"Money with Energy Management: {money_with_ess}Eu")
+    print(f"EMS have saved {money_saved}Eu")
 

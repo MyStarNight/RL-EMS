@@ -88,7 +88,7 @@ states, actions, rewards, q_values, sample_counts = function.q_learning_train(
     consumption_dict=new_consumption_dict,
     battery_dict=battery_dict,
     num_episode=10000,
-    exploration_rate=0.2,
+    exploration_rate=0.5,
     learning_rate=0.1
 )
 

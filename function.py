@@ -2,7 +2,6 @@ import environment
 import numpy as np
 import pandas as pd
 
-
 def processing_data(price_dict, consumption_dict):
     for hour, price in price_dict.items():
         price_dict[hour] = round(price)
@@ -15,11 +14,12 @@ def processing_data(price_dict, consumption_dict):
 
 def money_saved_calculaton(actions, price_dict, usage_duration, charge_rate=5):
     money_without_ess = 0
-    for hour in range(1, 25):
+    num = len(actions) + 1
+    for hour in range(1, num):
         money_without_ess += price_dict[hour] * usage_duration[hour]
 
     money_with_ess = 0
-    for hour in range(1, 25):
+    for hour in range(1, num):
         if actions[hour-1] == "charge":
             money_with_ess += price_dict[hour] * (usage_duration[hour] + charge_rate)
         elif actions[hour-1] == "discharge":
@@ -69,9 +69,10 @@ def q_learning_train(price_dict:dict, consumption_dict:dict, battery_dict: dict,
             q_values[state][action], sample_counts[state][action] = 0, 0
 
     # 进行q learning训练
+    max_total_reward = 0
     for episode in range(1, num_episode + 1):
         # 重置EMS，回到初始状态
-        state = ems.reset(energy_start=np.random.randint(0, 61))
+        state = ems.reset(energy_start=battery_dict["start_state"])
         total_reward = 0
 
         states = [state]
@@ -80,6 +81,7 @@ def q_learning_train(price_dict:dict, consumption_dict:dict, battery_dict: dict,
         while True:
             # 设定当前状态下的充放电功率
             ems.charge_discharge(charge_rate=ems.max_charge_rate, discharge_rate=grid_consumption[ems.time_hour])
+            # ems.charge_discharge(charge_rate=ems.max_charge_rate, discharge_rate=ems.max_discharge_rate)
 
             # 选择动作
             action = environment.choose_action(ems.state[0], ems.charge_rate, ems.discharge_rate, ems.battery_capacity, exploration_rate=exploration_rate, q_values=q_values, state=state)
@@ -105,6 +107,12 @@ def q_learning_train(price_dict:dict, consumption_dict:dict, battery_dict: dict,
             if len(actions) == len(grid_price) - 1:
                 break
 
+        if total_reward > max_total_reward:
+            max_total_reward = total_reward
+            best_actions = actions
+            best_states = states
+            best_rewards = rewards
+
         if episode % 1000 == 0 or episode == num_episode - 1:
             print(f"Episode {episode}, Total Reward: {total_reward}")
 
@@ -112,13 +120,15 @@ def q_learning_train(price_dict:dict, consumption_dict:dict, battery_dict: dict,
     sample_counts_result = pd.DataFrame(sample_counts).T
 
     print("")
-    for action, state in zip(actions, states[:-1]):
+    for action, state in zip(best_actions, best_states[:-1]):
         print(f"this state: {state}, this action: {action}")
 
-    money_without_ess, money_with_ess, money_saved = money_saved_calculaton(actions, grid_price,grid_consumption,charge_rate=ems.charge_rate)
-    print(f"\nMoney without Energy Management: {money_without_ess}$Eu")
+    money_without_ess, money_with_ess, money_saved = money_saved_calculaton(best_actions, grid_price, grid_consumption, charge_rate=ems.charge_rate)
+    print(f"\nMoney without Energy Management: {money_without_ess}Eu")
     print(f"Money with Energy Management: {money_with_ess}Eu")
     print(f"EMS have saved {money_saved}Eu")
+    print(max_total_reward)
 
-    return states, actions, rewards, q_values_result, sample_counts_result
 
+
+    return best_states, best_actions, best_rewards, q_values_result, sample_counts_result

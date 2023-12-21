@@ -1,8 +1,13 @@
 import environment
+import numpy as np
 import function
 
 # price: https://www.kaggle.com/datasets/arashnic/electricity-spot-price
 # consumption: https://www.kaggle.com/datasets/taranvee/smart-home-dataset-with-weather-information
+
+'''
+配置文件信息
+'''
 
 # 单位为Euro, 欧元
 price_dict = {
@@ -30,7 +35,7 @@ price_dict = {
     22: 131.619995,
     23: 125.180000,
     24: 121.419998,
-    25: 125.120003
+
 }
 
 # 按照每分钟使用的P(kw)进行叠加
@@ -59,21 +64,30 @@ consumption_dict = {
     22: 46.45626667,
     23: 89.34038334,
     24: 62.64778333,
-    25: 55.09001667
+
 }
 
 battery_dict = {
-    "capacity": 60,
-    "max_charge_rate": 6,
-    "max_discharge_rate": 3
+    "capacity": 20,
+    "max_charge_rate": 5,
+    "max_discharge_rate": 5,
+    "start_state": 0
+    # "start_state": np.random.randint(1, 61)
 }
 
+# 延长时间
+new_price_dict = {}
+new_consumption_dict = {}
+for hour in range(1, int(7*24)+2):
+    new_price_dict[hour] = price_dict[int(hour%24)] if hour%24 != 0 else price_dict[24]
+    new_consumption_dict[hour] = consumption_dict[int(hour%24)] if hour%24 != 0 else consumption_dict[24]
+    # new_consumption_dict[hour] = 300
 
 states, actions, rewards, q_values, sample_counts = function.q_learning_train(
-    price_dict=price_dict,
-    consumption_dict=consumption_dict,
+    price_dict=new_price_dict,
+    consumption_dict=new_consumption_dict,
     battery_dict=battery_dict,
     num_episode=10000,
-    exploration_rate=0.2,
+    exploration_rate=0.5,
     learning_rate=0.1
 )

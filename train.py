@@ -75,20 +75,24 @@ battery_dict = {
     # "start_state": np.random.randint(1, 61)
 }
 
-# 延长时间
-new_price_dict = {}
-new_consumption_dict = {}
-for hour in range(1, int(7*24)+2):
-    new_price_dict[hour] = price_dict[int(hour%24)] if hour%24 != 0 else price_dict[24]
-    new_consumption_dict[hour] = consumption_dict[int(hour%24)] if hour%24 != 0 else consumption_dict[24]
-    # new_consumption_dict[hour] = 300
+days = 7
 
-states, actions, rewards, q_values, sample_counts = function.q_learning_train(
-    price_dict=new_price_dict,
-    consumption_dict=new_consumption_dict,
-    battery_dict=battery_dict,
-    num_episode=10000,
-    exploration_rate=0.5,
-    learning_rate=0.1
-)
+if __name__ == '__main__':
+
+    # 延长时间
+    new_price_dict = {}
+    new_consumption_dict = {}
+    for hour in range(1, int(days*24)+2):
+        new_price_dict[hour] = price_dict[int(hour%24)] if hour%24 != 0 else price_dict[24]
+        new_consumption_dict[hour] = consumption_dict[int(hour%24)] if hour%24 != 0 else consumption_dict[24]
+        # new_consumption_dict[hour] = 300
+
+    states, actions, rewards, q_values, sample_counts = function.q_learning_train(
+        price_dict=new_price_dict,
+        consumption_dict=new_consumption_dict,
+        battery_dict=battery_dict,
+        num_episode=10000,
+        exploration_rate=0.2,
+        learning_rate=0.1
+    )
 

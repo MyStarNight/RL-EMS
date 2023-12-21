@@ -50,7 +50,8 @@ def q_learning_train(price_dict:dict, consumption_dict:dict, battery_dict: dict,
     ems = environment.EMS_MDP(grid_price=grid_price,
                               battery_capacity=battery_dict["capacity"],
                               max_charge_rate=battery_dict["max_charge_rate"],
-                              max_discharge_rate=battery_dict["max_discharge_rate"])
+                              max_discharge_rate=battery_dict["max_discharge_rate"]
+                              )
 
     # 得到所有状态state
     all_states = [(energy, price) for energy in range(int(ems.battery_capacity+1)) for price in price_set]

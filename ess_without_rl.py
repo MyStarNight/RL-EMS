@@ -4,12 +4,16 @@ import train
 import pandas as pd
 import numpy as np
 
-# 获取电价、损耗
-grid_price, grid_consumption = function.processing_data(train.price_dict, train.consumption_dict)
-battery_dict = train.battery_dict
+days = 7
+new_price_dict = {}
+new_consumption_dict = {}
+for hour in range(1, int(days * 24) + 2):
+    new_price_dict[hour] = train.price_dict[int(hour % 24)] if hour % 24 != 0 else train.price_dict[24]
+    new_consumption_dict[hour] = train.consumption_dict[int(hour % 24)] if hour % 24 != 0 else train.consumption_dict[24]
 
-grid_price[25] = grid_price[1]
-grid_consumption[25] = grid_consumption[1]
+# 获取电价、损耗
+grid_price, grid_consumption = function.processing_data(new_price_dict, new_consumption_dict)
+battery_dict = train.battery_dict
 
 # 计算阈值，采用均值的方式
 # threshold = round(np.average(pd.Series(grid_price).values))

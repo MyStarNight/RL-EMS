@@ -1,6 +1,7 @@
 import environment
 import numpy as np
 import function
+import argparse
 
 # price: https://www.kaggle.com/datasets/arashnic/electricity-spot-price
 # consumption: https://www.kaggle.com/datasets/taranvee/smart-home-dataset-with-weather-information
@@ -78,7 +79,6 @@ battery_dict = {
 days = 7
 
 if __name__ == '__main__':
-
     # 延长时间
     new_price_dict = {}
     new_consumption_dict = {}

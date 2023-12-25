@@ -17,6 +17,20 @@ This is a repo for energy management system with reinforcement learning.
 
 # 仿真结果
 
+## 当前仿真数据
+
+[Dataset1: Electricity Price](https://www.kaggle.com/datasets/arashnic/electricity-spot-price)
+
+Electricity price forecasting (EPF) is a branch of energy forecasting which focuses on predicting the spot and forward prices in wholesale electricity markets.
+
+Spot price (EUR): Day ahead Spot Price in the price area(The day-ahead prices indicate the balance between supply and demand.) [Unit: EUR per MWh]
+
+[Dataset2: Electricity Consumption](https://www.kaggle.com/datasets/taranvee/smart-home-dataset-with-weather-information)
+
+It is a smart home dataset with weather information.
+
+This CSV file contains the readings with a time span of 1 minute of house appliances in kW from a smart meter and weather conditions of that particular region.
+
 ## 阈值策略
 
 从目前的结果来看，阈值策略并没有想象的那么聪明.

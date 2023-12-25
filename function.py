@@ -1,6 +1,7 @@
 import environment
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 def processing_data(price_dict, consumption_dict):
     for hour, price in price_dict.items():
@@ -14,20 +15,27 @@ def processing_data(price_dict, consumption_dict):
 
 def money_saved_calculaton(actions, price_dict, usage_duration, charge_rate=5):
     money_without_ess = 0
+    money_without_ess_list = []
     num = len(actions) + 1
     for hour in range(1, num):
         money_without_ess += price_dict[hour] * usage_duration[hour]
+        money_without_ess_list.append(money_without_ess)
 
     money_with_ess = 0
+    money_with_ess_list = []
     for hour in range(1, num):
-        if actions[hour-1] == "charge":
+        if actions[hour - 1] == "charge":
             money_with_ess += price_dict[hour] * (usage_duration[hour] + charge_rate)
-        elif actions[hour-1] == "discharge":
+        elif actions[hour - 1] == "discharge":
+            money_with_ess_list.append(money_with_ess)
             continue
-        elif actions[hour-1] == "use_grid":
+        elif actions[hour - 1] == "use_grid":
             money_with_ess += price_dict[hour] * usage_duration[hour]
+        money_with_ess_list.append(money_with_ess)
 
-    return money_without_ess, money_with_ess, money_without_ess-money_with_ess
+    return money_without_ess, money_with_ess, money_without_ess-money_with_ess, money_without_ess_list, money_with_ess_list
+
+
 
 def max_dict(d):
     # returns the argmax (key) and max (value) from a dictionary
@@ -118,7 +126,7 @@ def q_learning_train(price_dict:dict, consumption_dict:dict, battery_dict: dict,
     for action, state in zip(best_actions, best_states[:-1]):
         print(f"this state: {state}, this action: {action}")
 
-    money_without_ess, money_with_ess, money_saved = money_saved_calculaton(best_actions, grid_price, grid_consumption, charge_rate=ems.charge_rate)
+    money_without_ess, money_with_ess, money_saved, money_without_ess_list, money_with_ess_list = money_saved_calculaton(best_actions, grid_price, grid_consumption, charge_rate=ems.charge_rate)
     print(f"\nMoney without Energy Management: {money_without_ess}Eu")
     print(f"Money with Energy Management: {money_with_ess}Eu")
     print(f"EMS have saved {money_saved}Eu")
@@ -126,4 +134,4 @@ def q_learning_train(price_dict:dict, consumption_dict:dict, battery_dict: dict,
 
 
 
-    return best_states, best_actions, best_rewards, q_values_result, sample_counts_result
+    return best_states, best_actions, best_rewards, q_values_result, sample_counts_result, money_without_ess_list, money_with_ess_list

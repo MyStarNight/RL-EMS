@@ -87,7 +87,7 @@ if __name__ == '__main__':
         new_consumption_dict[hour] = consumption_dict[int(hour%24)] if hour%24 != 0 else consumption_dict[24]
         # new_consumption_dict[hour] = 300
 
-    states, actions, rewards, q_values, sample_counts = function.q_learning_train(
+    states, actions, rewards, q_values, sample_counts, money_without_ess_list, money_with_ess_list = function.q_learning_train(
         price_dict=new_price_dict,
         consumption_dict=new_consumption_dict,
         battery_dict=battery_dict,

@@ -59,7 +59,7 @@ while True:
 for action, state in zip(actions, states[:-1]):
     print(f"this state: {state}, this action: {action}")
 
-money_without_ess, money_with_ess, money_saved = function.money_saved_calculaton(actions, grid_price, grid_consumption, charge_rate=ems.charge_rate)
+money_without_ess, money_with_ess, money_saved, money_without_ess_list, money_with_ess_list = function.money_saved_calculaton(actions, grid_price, grid_consumption, charge_rate=ems.charge_rate)
 print(f"\nMoney without Energy Management: {money_without_ess}Eu")
 print(f"Money with Energy Management: {money_with_ess}Eu")
 print(f"EMS have saved {money_saved}Eu")

@@ -49,6 +49,13 @@ def max_dict(d):
 
     return np.random.choice(max_keys), max_val
 
+def visualization(price_dict:dict, consumption_dict:dict):
+    plt.plot(list(price_dict.keys()), list(price_dict.items()), label="price")
+    plt.title('Price in 24h')
+    plt.xlabel('Time(h)')
+    plt.ylabel('Price(Eu/MWh)')
+    plt.show()
+
 def q_learning_train(price_dict:dict, consumption_dict:dict, battery_dict: dict, num_episode=10000, exploration_rate=0.1, learning_rate=0.1):
     # 获取一天24h的价格以及使用时间
     grid_price, grid_consumption = processing_data(price_dict, consumption_dict)
@@ -127,9 +134,9 @@ def q_learning_train(price_dict:dict, consumption_dict:dict, battery_dict: dict,
         print(f"this state: {state}, this action: {action}")
 
     money_without_ess, money_with_ess, money_saved, money_without_ess_list, money_with_ess_list = money_saved_calculaton(best_actions, grid_price, grid_consumption, charge_rate=ems.charge_rate)
-    print(f"\nMoney without Energy Management: {money_without_ess}Eu")
-    print(f"Money with Energy Management: {money_with_ess}Eu")
-    print(f"EMS have saved {money_saved}Eu")
+    print(f"\nMoney without Energy Management: {money_without_ess/1000}Eu")
+    print(f"Money with Energy Management: {money_with_ess/1000}Eu")
+    print(f"EMS have saved {money_saved/1000}Eu")
     print(max_total_reward)
 
 

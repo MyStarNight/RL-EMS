@@ -2,6 +2,7 @@ import environment
 import numpy as np
 import function
 import argparse
+import ess_without_rl
 
 # price: https://www.kaggle.com/datasets/arashnic/electricity-spot-price
 # consumption: https://www.kaggle.com/datasets/taranvee/smart-home-dataset-with-weather-information
@@ -79,6 +80,9 @@ battery_dict = {
 days = 7
 
 if __name__ == '__main__':
+    # 进行可视化
+    function.visualization(price_dict, consumption_dict)
+
     # 延长时间
     new_price_dict = {}
     new_consumption_dict = {}
@@ -96,3 +100,5 @@ if __name__ == '__main__':
         learning_rate=0.1
     )
 
+    money_with_threshold_ess_list = ess_without_rl.main()
+    ess_without_rl.visualization(money_with_ess_list, money_with_threshold_ess_list, money_without_ess_list)

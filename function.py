@@ -13,7 +13,7 @@ def processing_data(price_dict, consumption_dict):
 
     return price_dict, consumption_dict
 
-def money_saved_calculaton(actions, price_dict, usage_duration, charge_rate=5):
+def money_saved_calculation(actions, price_dict, usage_duration, charge_rate):
     money_without_ess = 0
     money_without_ess_list = []
     num = len(actions) + 1
@@ -36,7 +36,6 @@ def money_saved_calculaton(actions, price_dict, usage_duration, charge_rate=5):
     return money_without_ess, money_with_ess, money_without_ess-money_with_ess, money_without_ess_list, money_with_ess_list
 
 
-
 def max_dict(d):
     # returns the argmax (key) and max (value) from a dictionary
     # put this into a function since we are using it so often
@@ -49,11 +48,39 @@ def max_dict(d):
 
     return np.random.choice(max_keys), max_val
 
+
 def visualization(price_dict:dict, consumption_dict:dict):
-    plt.plot(list(price_dict.keys()), list(price_dict.items()), label="price")
-    plt.title('Price in 24h')
-    plt.xlabel('Time(h)')
-    plt.ylabel('Price(Eu/MWh)')
+    fig, ax1 = plt.subplots()
+
+    # 绘制电力使用柱状图在左Y轴
+    ax1.bar(list(consumption_dict.keys()), list(consumption_dict.values()), label="Usage", color='salmon',
+            width=0.8, alpha=0.8, edgecolor='black')
+    ax1.set_xlabel('Time (h)')
+    ax1.set_ylabel('Usage (kWh)')
+    ax1.tick_params(axis='y')  # 设置左Y轴刻度的颜色
+    ax1.grid(axis='y', linestyle='--', alpha=0.7)
+    ax1.tick_params(axis='x', rotation=45)  # 旋转X轴刻度，以便更好地显示
+
+    # 创建共享X轴的第二个Y轴
+    ax2 = ax1.twinx()
+
+    # 绘制实时价格折线图在右Y轴
+    ax2.plot(list(price_dict.keys()), list(price_dict.values()), marker='o', linestyle='-', color='dodgerblue',
+             label="Price")
+    ax2.set_ylabel('Price (Eu/MWh)',)
+    ax2.tick_params(axis='y',)  # 设置右Y轴刻度的颜色
+
+    # 添加图例
+    ax1.legend(loc='upper left')
+    ax2.legend(loc='upper right')
+
+    # 添加标题
+    plt.suptitle('Real Time Price and Usage', fontsize=12, fontweight='bold')
+
+    # 调整布局，防止文字被裁剪
+    plt.tight_layout()
+
+    # 显示图形
     plt.show()
 
 def q_learning_train(price_dict:dict, consumption_dict:dict, battery_dict: dict, num_episode=10000, exploration_rate=0.1, learning_rate=0.1):
@@ -133,12 +160,10 @@ def q_learning_train(price_dict:dict, consumption_dict:dict, battery_dict: dict,
     for action, state in zip(best_actions, best_states[:-1]):
         print(f"this state: {state}, this action: {action}")
 
-    money_without_ess, money_with_ess, money_saved, money_without_ess_list, money_with_ess_list = money_saved_calculaton(best_actions, grid_price, grid_consumption, charge_rate=ems.charge_rate)
+    money_without_ess, money_with_ess, money_saved, money_without_ess_list, money_with_ess_list = money_saved_calculation(best_actions, grid_price, grid_consumption, charge_rate=ems.charge_rate)
     print(f"\nMoney without Energy Management: {money_without_ess/1000}Eu")
     print(f"Money with Energy Management: {money_with_ess/1000}Eu")
     print(f"EMS have saved {money_saved/1000}Eu")
     print(max_total_reward)
-
-
 
     return best_states, best_actions, best_rewards, q_values_result, sample_counts_result, money_without_ess_list, money_with_ess_list
